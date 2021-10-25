@@ -66,18 +66,24 @@ class DBActor(object):
             qparams = {}
         return self._call_db_all(qstr, qparams)
 
-    def call_all_dict(self, qstr, qparams=None):
+    def _call_all_dict(self, qstr, qparams=None):
         if qparams is None:
             qparams = {}
         res = self._call_db_all(qstr, qparams)
         return [dict(qr) for qr in res]
+
+    def call_all_dict(self, qstr, qparams=None):
+        return self._call_all_dict(qstr, qparams=qparams)
 
     def call_one(self, qstr, qparams=None):
         if qparams is None:
             qparams = {}
         return self._call_db_one(qstr, qparams)
 
-    def call_one_dict(self, qstr, qparams=None):
+    def _call_one_dict(self, qstr, qparams=None):
         if qparams is None:
             qparams = {}
         return dict(self.call_one(qstr, qparams=qparams))
+
+    def call_one_dict(self, qstr, qparams=None):
+        return self._call_one_dict(qstr, qparams=qparams)

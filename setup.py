@@ -3,8 +3,12 @@ from setuptools import setup
 __version__ = '0.0.1'
 
 REQUIRES = ['psycopg2-binary']
-TESTS_REQUIRES = []
-EXTRAS_REQUIRES = {}
+TESTS_REQUIRES = REQUIRES
+EXTRAS_REQUIRES = {
+    'sqlalchemy': ['sqlalchemy'],
+    'jinjasql': ['jinjasql'],
+    'pandas': ['jinjasql', 'pandas'],
+}
 
 setup_dict = dict(name='dbactor',
                   version=__version__,
