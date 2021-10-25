@@ -3,12 +3,16 @@ from setuptools import setup
 __version__ = '0.0.1'
 
 REQUIRES = ['psycopg2-binary']
-TESTS_REQUIRES = REQUIRES
-EXTRAS_REQUIRES = {
+EXTRAS_REQUIRE = {
     'sqlalchemy': ['sqlalchemy'],
     'jinjasql': ['jinjasql'],
     'pandas': ['jinjasql', 'pandas'],
 }
+extras_lists = [vals for k, vals in EXTRAS_REQUIRE.items()]
+# flattening the values in EXTRAS_REQUIRE from popular stack overflow question 952914
+all_extras_require = list(set([item for sublist in extras_lists for item in sublist]))
+EXTRAS_REQUIRE['all'] = all_extras_require
+TESTS_REQUIRE = REQUIRES + all_extras_require + ['pytest', 'testing.postgresql']
 
 setup_dict = dict(name='dbactor',
                   version=__version__,
@@ -19,8 +23,8 @@ setup_dict = dict(name='dbactor',
                   author_email='jackschultz23@gmail.com',
                   license='MIT',
                   install_requires=REQUIRES,
-                  extras_requires=EXTRAS_REQUIRES,
-                  tests_requires=TESTS_REQUIRES,
+                  extras_require=EXTRAS_REQUIRE,
+                  tests_require=TESTS_REQUIRE,
                   packages=['dbactor'])
 
 

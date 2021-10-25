@@ -58,8 +58,10 @@ class DBActor(object):
     def call_create_or_update(self, sql_fn, params):
         return self._create_or_update_db(sql_fn, params)
 
-    def create_or_update(self, sql_fn, params):
-        return self._create_or_update_db(sql_fn, params)
+    def create_or_update(self, sql_fn, qparams={}):
+        if qparams is None:
+            qparams = {}
+        return self._create_or_update_db(sql_fn, qparams)
 
     def call_all(self, qstr, qparams=None):
         if qparams is None:
