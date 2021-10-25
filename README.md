@@ -2,6 +2,20 @@
 
 Simple class that interacts with Postgres to avoid ORM specifics.
 
+### Instillation
+
+DBActor supports multiple types of integrations. In many cases, you're looking to use it for a specific purpose. Sepcific extras installations allows for this.
+
+Examples of what the different extras allows you to do are below.
+
+```bash
+$ pip install dbactor
+$ pip install dbactor['jinjasql']
+$ pip install dbactor['sqlalchemy']
+$ pip install dbactor['pandas']
+$ pip install dbactor['all']
+```
+
 ### Initialize
 
 Preference for DBActor location is in `db/__init__.py`.
@@ -18,9 +32,13 @@ db_port = os.environ.get('DB_PORT', '5432')
 
 actor = DBActor(database=db_name, user=db_user, password=db_password, host=db_host, port=db_port)
 
+# Or initialize with the url
+db_url = f'postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}'
+
+actor = DBActor(url=db_url)
 ```
 
-To use in any file then, import with,
+Then, to use in any file import with,
 
 ```python
 from db import actor
@@ -102,6 +120,11 @@ print(res)
 In cases where you may or may not have paramaters, JinjaSql is a great way to design queries, and DBActor allows for those in all cases.
 
 ```python
+from dbactor import DBJinjaSqlActor
+from db import db_url
+
+actor = DBJinjaSqlActor(url=db_url)
+
 qstr = '''
     SELECT
         *
@@ -119,15 +142,15 @@ qstr = '''
 '''
 
 qparams = dict(min_cost=3, max_cost=4)
-res = actor.call_df(qstr, qparams=qparams)
+res = actor.call_all_dict(qstr, qparams=qparams)
 print(res)
 # [{'id': 1, 'name': 'mug', 'cost': Decimal('4')}]
 ```
 
 
-## Create or Update
+## SqlAlchemy
 
-DBActor is made to avoid using ORMs for the most part, however, for creating or updating, you can either create or update with sql strings alone, or also with SQLAlchemy models.
+DBActor is made to avoid using ORMs for the most part. However, when inserting or updating rows, ORMs prove to be simpler. with `DBSqlalchemyActor`, you can either create or update with sql strings alone, or also with SQLAlchemy models.
 
 
 ```python
@@ -161,8 +184,11 @@ bowl, 6
 
 ```python
 import csv
-from db import actor
+from dbactor import DBSqlAlchemyActor
+from db import db_url
 from db.models import Product
+
+actor = DBSqlAlchemyActor(url=db_url)
 
 with open('products.csv', 'r') as csvfile:
     csvreader = csv.DictReader(csvfile)
@@ -180,4 +206,35 @@ qstr = 'select count(*) from products'
 res = actor.call_custom_one(qstr)
 print(res)
 # RealDictRow([('count', 8)])
+```
+
+### Pandas
+
+When using `DBPandasActor`, you'll have the ability to `call_df` using the same connection. This is done with JinjaSQL templates.
+
+```python
+from dbactor import DBPandasActor
+from db import db_url
+
+actor = DBPandasActor(url=db_url)
+
+qstr = '''
+select * from products where cost > {{min_cost}};
+'''
+qparams = dict(min_cost=4)
+
+df = actor.call_df(qstr, qparams=qparams)
+print(type(df))
+# <class 'pandas.core.frame.DataFrame'>
+print(df)
+#    id   name  cost
+# 0   2   fork   1.0
+# 1   3  spoon   1.0
+# 2   4  knife   1.0
+# 3   5    pan   8.0
+# 4   1    mug  10.0
+# 5   6    cup   5.0
+# 6   7  plate   3.0
+# 7   8   bowl   6.0
+
 ```
