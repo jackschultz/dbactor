@@ -66,18 +66,7 @@ INSERT INTO "public"."products" ("id", "name", "cost") VALUES
 ## Actions
 
 ```python
-#from db import actor
-
-import os
-from dbactor import DBActor
-
-db_name = os.environ.get('DB_NAME', 'dbname')
-db_user = os.environ.get('DB_USER', 'dbuser')
-db_password = os.environ.get('DB_PASSWORD', 'dbpassword')
-db_host = os.environ.get('DB_HOST', 'localhost')
-db_port = os.environ.get('DB_PORT', '5432')
-
-actor = DBActor(database=db_name, user=db_user, password=db_password, host=db_host, port=db_port)
+from db import actor
 
 qstr = 'select count(*) from products'
 res = actor.call_custom_one(qstr)
@@ -129,7 +118,7 @@ qstr = '''
     ;
 '''
 
-qparams = dict(min_cost=5, max_cost=10)
+qparams = dict(min_cost=3, max_cost=4)
 res = actor.call_df(qstr, qparams=qparams)
 print(res)
 # [{'id': 1, 'name': 'mug', 'cost': Decimal('4')}]
