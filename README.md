@@ -87,19 +87,19 @@ INSERT INTO "public"."products" ("id", "name", "cost") VALUES
 from db import actor
 
 qstr = 'select count(*) from products'
-res = actor.call_custom_one(qstr)
+res = actor.call_one(qstr)
 print(res)
 # RealDictRow([('count', 5)])
 
 qstr = 'select * from products;'
 
 # If wanting RealDict
-res = actor.call_custom_all(qstr)
+res = actor.call_all(qstr)
 print(res)
 # [RealDictRow([('id', 1), ('name', 'mug'), ('cost', Decimal('4'))]), RealDictRow([('id', 2), ('name', 'fork'), ('cost', Decimal('1'))]), RealDictRow([('id', 3), ('name', 'spoon'), ('cost', Decimal('1'))]), RealDictRow([('id', 4), ('name', 'knife'), ('cost', Decimal('1'))]), RealDictRow([('id', 5), ('name', 'pan'), ('cost', Decimal('8'))])]
 
 # If wanting python dict rather than RealDict:
-res = actor.call_custom_all_dict(qstr)
+res = actor.call_all_dict(qstr)
 print(res)
 # [{'id': 1, 'name': 'mug', 'cost': Decimal('4')}, {'id': 2, 'name': 'fork', 'cost': Decimal('1')}, {'id': 3, 'name': 'spoon', 'cost': Decimal('1')}, {'id': 4, 'name': 'knife', 'cost': Decimal('1')}, {'id': 5, 'name': 'pan', 'cost': Decimal('8')}]
 
@@ -198,12 +198,12 @@ with open('products.csv', 'r') as csvfile:
         actor.create_or_update_model(Product, keys=keys, values=values)
         
 qstr = 'select * from products'
-res = actor.call_custom_all_dict(qstr)
+res = actor.call_all_dict(qstr)
 print(res)
 # [{'id': 2, 'name': 'fork', 'cost': Decimal('1')}, {'id': 3, 'name': 'spoon', 'cost': Decimal('1')}, {'id': 4, 'name': 'knife', 'cost': Decimal('1')}, {'id': 5, 'name': 'pan', 'cost': Decimal('8')}, {'id': 1, 'name': 'mug', 'cost': Decimal('10')}, {'id': 6, 'name': 'cup', 'cost': Decimal('5')}, {'id': 7, 'name': 'plate', 'cost': Decimal('3')}, {'id': 8, 'name': 'bowl', 'cost': Decimal('6')}]
 
 qstr = 'select count(*) from products'
-res = actor.call_custom_one(qstr)
+res = actor.call_one(qstr)
 print(res)
 # RealDictRow([('count', 8)])
 ```
