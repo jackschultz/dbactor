@@ -102,17 +102,6 @@ print(res)
 res = actor.call_all_dict(qstr)
 print(res)
 # [{'id': 1, 'name': 'mug', 'cost': Decimal('4')}, {'id': 2, 'name': 'fork', 'cost': Decimal('1')}, {'id': 3, 'name': 'spoon', 'cost': Decimal('1')}, {'id': 4, 'name': 'knife', 'cost': Decimal('1')}, {'id': 5, 'name': 'pan', 'cost': Decimal('8')}]
-
-# If installed with Pandas:
-res = actor.call_df(qstr)
-print(res)
-# <class 'pandas.core.frame.DataFrame'>
-#    id   name  cost
-# 0   1    mug   4.0
-# 1   2   fork   1.0
-# 2   3  spoon   1.0
-# 3   4  knife   1.0
-# 4   5    pan   8.0
 ```
 
 ## JinjaSql
