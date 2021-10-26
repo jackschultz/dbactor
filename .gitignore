@@ -4,3 +4,6 @@
 *.egg-info/
 test.py
 products.csv
+
+dist/
+sdist/
