@@ -16,7 +16,7 @@ TESTS_REQUIRE = REQUIRES + all_extras_require + ['pytest', 'testing.postgresql']
 
 setup_dict = dict(name='dbactor',
                   version=__version__,
-                  description='DBActor',
+                  description='DBActor: ORM helper and alternative',
                   long_description=open('README.md').read(),
                   url='http://github.com/jackschultz/dbactor',
                   author='Jack Schultz',
