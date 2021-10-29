@@ -5,29 +5,32 @@ from contextlib import contextmanager
 
 class DBSqlAlchemyActor(DBActor):
 
-    def __init__(self, *args, echo=False, **kwargs):
+    def __init__(self, *args, echo=False, expire_on_commit=False, pool_pre_ping=True, **kwargs):
         super().__init__(*args, **kwargs)
         try:
             from sqlalchemy import create_engine
             from sqlalchemy.orm import sessionmaker
         except ImportError:
             raise ImportError(f'SqlAlchemy needs to be installed to use DBSqlAlchemyActor.')
-        self.engine = create_engine(self.db_url, isolation_level="AUTOCOMMIT", echo=echo)
-        self.Session = sessionmaker(bind=self.engine)
-        self.internal_session = self.Session()
+        self.engine = create_engine(self.db_url,
+                                    creator=self.tcp.getconn,
+                                    isolation_level="AUTOCOMMIT",
+                                    echo=echo,
+                                    pool_pre_ping=pool_pre_ping)
+        self.Session = sessionmaker(bind=self.engine, expire_on_commit=expire_on_commit)
 
     @contextmanager
     def _get_session(self):
         try:
-            yield self.internal_session
+            session = self.Session()
+            yield session
         except Exception as e:
-            self.internal_session.rollback()
+            session.rollback()
             raise e
         finally:
-            self.internal_session.commit()
+            session.commit()
 
-    @property
-    def session(self):
+    def get_session(self):
         with self._get_session() as given_session:
             return given_session
 
@@ -38,14 +41,17 @@ class DBSqlAlchemyActor(DBActor):
 
     def create_or_update_model(self, model, keys: dict, values: dict):
         """Logic for creating or updating using sqlalchemy model"""
-        obj = self.session.query(model).filter_by(**keys).first()
+        session = self.get_session()
+        obj = session.query(model).filter_by(**keys).first()
         if not obj:
             obj = model(**keys)
-        return self.update_object(obj, values)
+        return self.update_object(obj, values, session=session)
 
-    def update_object(self, obj, values: dict):
+    def update_object(self, obj, values: dict, session=None):
+        if not session:
+            session = self.get_session()
         for key, value in values.items():
             setattr(obj, key, value)
-        self.session.add(obj)
-        self.session.commit()
+        session.add(obj)
+        session.commit()
         return obj
