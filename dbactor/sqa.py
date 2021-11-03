@@ -5,7 +5,7 @@ from contextlib import contextmanager
 
 class DBSqlAlchemyActor(DBActor):
 
-    def __init__(self, *args, echo=False, expire_on_commit=False, pool_pre_ping=True, **kwargs):
+    def __init__(self, *args, echo=False, expire_on_commit=False, pool_pre_ping=False, **kwargs):
         super().__init__(*args, **kwargs)
         try:
             from sqlalchemy import create_engine
