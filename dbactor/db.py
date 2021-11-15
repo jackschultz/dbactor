@@ -1,3 +1,5 @@
+import os
+
 import psycopg2
 import psycopg2.extras
 from psycopg2.pool import ThreadedConnectionPool
@@ -89,3 +91,7 @@ class DBActor(object):
 
     def call_one_dict(self, qstr, qparams=None):
         return self._call_one_dict(qstr, qparams=qparams)
+
+    def run_file(self, filepath):
+        with self._get_cursor() as (cursor, conn):
+            cursor.execute(open(filepath, "r").read())
