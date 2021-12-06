@@ -19,8 +19,8 @@ product_select_where_cost_qstr = "SELECT * from products where cost > {{ min_cos
 
 
 @pytest.fixture()
-def test_actor(overall_actor):
-    with overall_actor.transaction() as actor:
+def test_actor(pd_actor):
+    with pd_actor.transaction() as actor:
         actor.create_or_update(product_insert_qstr)
         yield actor
         # rollback the test

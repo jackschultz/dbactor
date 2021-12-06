@@ -5,8 +5,6 @@ import pytest
 from sqlalchemy import Column, Integer, Float
 from sqlalchemy.ext.declarative import declarative_base
 
-from dbactor import DBSqlAlchemyActor
-
 
 Base = declarative_base()
 
@@ -19,28 +17,15 @@ class Product(Base):
     cost = Column(Float)
 
 
-create_products_seq_str = 'CREATE SEQUENCE IF NOT EXISTS products_id_seq'
-create_products_str = '''
--- Table Definition
-CREATE TABLE "public"."products" (
-    "id" int4 NOT NULL DEFAULT nextval('products_id_seq'::regclass),
-    "name" varchar,
-    "cost" numeric,
-    PRIMARY KEY ("id")
-);
-'''
-
 product_count_qstr = "SELECT count(*) from products"
 
 
-@pytest.fixture()
-def test_actor():
-    with testing.postgresql.Postgresql() as postgresql:
-        db_url = postgresql.url()
-        actor = DBSqlAlchemyActor(url=db_url)
-        actor.create_or_update(create_products_seq_str)
-        actor.create_or_update(create_products_str)
+@pytest.fixture
+def test_actor(sqa_actor):
+    with sqa_actor.transaction() as actor:
         yield actor
+        # rollback the test
+        actor._conn.rollback()
 
 
 def test_create_and_insert(test_actor):

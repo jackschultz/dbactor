@@ -2,8 +2,8 @@ import pytest
 
 
 @pytest.fixture
-def test_actor(overall_actor):
-    with overall_actor.transaction() as actor:
+def test_actor(base_actor):
+    with base_actor.transaction() as actor:
         yield actor
         # rollback the test
         actor._conn.rollback()

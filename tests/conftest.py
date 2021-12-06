@@ -1,23 +1,48 @@
 import pytest
 import testing.postgresql
 
-from dbactor import DBActor, DBActorAll
+from dbactor import DBActor, DBActorAll, DBPandasActor, DBJinjaSqlActor, DBSqlAlchemyActor
 
 
-@pytest.fixture(scope="module")
-def overall_actor():
+@pytest.fixture(scope="session")
+def db_url():
     with testing.postgresql.Postgresql() as postgresql:
         db_url = postgresql.url()
         actor = DBActorAll(url=db_url)
-        # run the schema file
         actor.run_file("tests/structure.sql")
-        yield actor
+        yield db_url
 
 
 @pytest.fixture
-def test_actor(overall_actor):
-    with overall_actor.transaction() as actor:
-        yield actor
-        # rollback the test
-        actor._conn.rollback()
+def all_actor(db_url):
+    # run the schema file
+    actor = DBActorAll(url=db_url)
+    yield actor
 
+
+@pytest.fixture
+def base_actor(db_url):
+    # run the schema file
+    actor = DBActor(url=db_url)
+    yield actor
+
+
+@pytest.fixture
+def pd_actor(db_url):
+    # run the schema file
+    actor = DBPandasActor(url=db_url)
+    yield actor
+
+
+@pytest.fixture
+def jj_actor(db_url):
+    # run the schema file
+    actor = DBJinjaSqlActor(url=db_url)
+    yield actor
+
+
+@pytest.fixture
+def sqa_actor(db_url):
+    # run the schema file
+    actor = DBSqlAlchemyActor(url=db_url)
+    yield actor
