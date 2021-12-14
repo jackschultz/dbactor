@@ -19,13 +19,12 @@ product_select_where_cost_qstr = "SELECT * from products where cost > {{ min_cos
 
 
 @pytest.fixture()
-def test_actor():
-    with testing.postgresql.Postgresql() as postgresql:
-        db_url = postgresql.url()
-        actor = DBPandasActor(url=db_url)
-        actor.create_or_update(create_products_str)
+def test_actor(pd_actor):
+    with pd_actor.transaction() as actor:
         actor.create_or_update(product_insert_qstr)
         yield actor
+        # rollback the test
+        actor._conn.rollback()
 
 
 def test_pd_qparams(test_actor):

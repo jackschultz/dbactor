@@ -1,5 +1,3 @@
-import os
-
 import psycopg2
 import psycopg2.extras
 from psycopg2.pool import ThreadedConnectionPool
@@ -15,30 +13,54 @@ class DBActor(object):
         else:
             self.db_url = f'postgresql://{user}:{password}@{host}:{port}/{database}'
         self.tcp = ThreadedConnectionPool(min_conns, max_conns, self.db_url)
+        self._conn = None
+        self._cursor = None
 
     @contextmanager
     def _get_cursor(self):
+        if self._conn and self._cursor:
+            yield self._cursor, self._conn
+            return
         conn = self.tcp.getconn()
         cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         try:
             yield cursor, conn
-        except Exception as e:
+            conn.commit()
+        except (Exception, psycopg2.DatabaseError) as e:
             print(f'DB Actor Error: {e}')
             conn.rollback()
+            raise e
         finally:
-            conn.commit()
+            conn.close()
             self.tcp.putconn(conn)
+
+    @contextmanager
+    def transaction(self):
+        with self._get_cursor() as (cursor, conn):
+            try:
+                self._cursor = cursor
+                self._conn = conn
+                yield self
+            except Exception as e:
+                raise e
+            finally:
+                self._cursor = None
+                self._conn = None
 
     @property
     def conn(self):
         """
         Having to deal with times when getting a conn and using that yourself is a little better
         """
+        if self._conn:
+            return self._conn
         with self._get_cursor() as (_, conn):
             return conn
 
     @property
     def cursor(self):
+        if self._cursor:
+            return self._cursor
         with self._get_cursor() as (cursor, _):
             return cursor
 
@@ -54,8 +76,7 @@ class DBActor(object):
 
     def _create_or_update_db(self, command, cparams):
         with self._get_cursor() as (cursor, conn):
-            cursor.execute(command, cparams)
-            return conn.commit()
+            return cursor.execute(command, cparams)
 
     def call_create_or_update(self, sql_fn, params):
         return self._create_or_update_db(sql_fn, params)
